@@ -1,0 +1,50 @@
+import "reflect-metadata";
+import Fastify from "fastify";
+import dotenv from "dotenv";
+import fastifyRateLimit from "@fastify/rate-limit";
+import { AppDataSource } from "./data-source";
+import { authRoutes } from "./routes/auth";
+
+dotenv.config();
+
+const fastify = Fastify({ logger: true });
+
+// Register rate limit plugin globally
+fastify.register(fastifyRateLimit, {
+  max: 100,
+  timeWindow: "1 minute",
+  errorResponseBuilder: (request, context) => {
+    return {
+      statusCode: 429,
+      error: "Too Many Requests",
+      message: `Rate limit exceeded. Maximum ${context.max} requests allowed per ${context.after}. Please try again later.`,
+    };
+  },
+});
+
+// Register auth routes
+fastify.register(authRoutes);
+
+// Health check route
+fastify.get("/health", async () => {
+  return { status: "ok", service: "identity-service", timestamp: new Date().toISOString() };
+});
+
+const start = async () => {
+  try {
+    // Initialize Database connection
+    await AppDataSource.initialize();
+    fastify.log.info("Database connected successfully.");
+
+    const port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
+    const host = process.env.HOST || "0.0.0.0";
+
+    await fastify.listen({ port, host });
+    fastify.log.info(`Identity Service is running on http://${host}:${port}`);
+  } catch (err) {
+    fastify.log.error(err);
+    process.exit(1);
+  }
+};
+
+start();
