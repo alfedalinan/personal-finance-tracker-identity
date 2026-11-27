@@ -2,12 +2,13 @@ import "reflect-metadata";
 import Fastify from "fastify";
 import dotenv from "dotenv";
 import crypto from "crypto";
+
+dotenv.config();
+
 import fastifyRateLimit from "@fastify/rate-limit";
 import { AppDataSource } from "./data-source";
 import { User } from "./entity/User";
 import { authRoutes } from "./routes/auth";
-
-dotenv.config();
 
 const fastify = Fastify({ logger: true });
 
