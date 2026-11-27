@@ -164,8 +164,13 @@ test("loginHandler includes tenantId in JWT access token payload", async () => {
   assert.ok(responseData);
   assert.ok(responseData.accessToken);
 
-  const decoded = jwt.verify(responseData.accessToken as string, process.env.JWT_SECRET || "super-secret-identity-key-change-in-production") as Record<string, any>;
+  const decoded = jwt.verify(responseData.accessToken as string, process.env.JWT_SECRET || "super-secret-identity-key-change-in-production", {
+    issuer: process.env.JWT_ISSUER || "http://localhost:3000",
+    audience: process.env.JWT_AUDIENCE || "http://localhost:5012",
+  }) as Record<string, any>;
   assert.strictEqual(decoded.tenantId, user.tenantId);
+  assert.strictEqual(decoded.iss, process.env.JWT_ISSUER || "http://localhost:3000");
+  assert.strictEqual(decoded.aud, process.env.JWT_AUDIENCE || "http://localhost:5012");
 });
 
 test("loginHandler auto-generates and persists tenantId for legacy user missing tenantId", async () => {
@@ -209,8 +214,13 @@ test("loginHandler auto-generates and persists tenantId for legacy user missing 
   assert.ok(responseData);
   assert.ok(responseData.accessToken);
 
-  const decoded = jwt.verify(responseData.accessToken as string, process.env.JWT_SECRET || "super-secret-identity-key-change-in-production") as Record<string, any>;
+  const decoded = jwt.verify(responseData.accessToken as string, process.env.JWT_SECRET || "super-secret-identity-key-change-in-production", {
+    issuer: process.env.JWT_ISSUER || "http://localhost:3000",
+    audience: process.env.JWT_AUDIENCE || "http://localhost:5012",
+  }) as Record<string, any>;
   assert.ok(decoded.tenantId);
+  assert.strictEqual(decoded.iss, process.env.JWT_ISSUER || "http://localhost:3000");
+  assert.strictEqual(decoded.aud, process.env.JWT_AUDIENCE || "http://localhost:5012");
   const uuidv4Regex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   assert.match(decoded.tenantId, uuidv4Regex);
 

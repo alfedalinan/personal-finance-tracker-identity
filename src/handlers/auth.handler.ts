@@ -6,6 +6,8 @@ import { AppDataSource } from "../data-source";
 import { User } from "../entity/User";
 
 const JWT_SECRET = process.env.JWT_SECRET || "super-secret-identity-key-change-in-production";
+const JWT_ISSUER = process.env.JWT_ISSUER || "http://localhost:3000";
+const JWT_AUDIENCE = process.env.JWT_AUDIENCE || "personal-finance-api";
 
 export interface RegisterBody {
   username: string;
@@ -94,7 +96,12 @@ export async function loginHandler(request: FastifyRequest<{ Body: LoginBody }>,
     ...customClaims,
   };
 
-  const accessToken = jwt.sign(payload, JWT_SECRET, { expiresIn: "1h" });
+  const accessToken = jwt.sign(payload, JWT_SECRET, {
+    expiresIn: "1h",
+    issuer: JWT_ISSUER,
+    audience: JWT_AUDIENCE,
+    algorithm: "HS256",
+  });
 
   return {
     message: "Authentication successful",
@@ -112,7 +119,10 @@ export async function verifyHandler(request: FastifyRequest, reply: FastifyReply
 
   const token = authHeader.split(" ")[1];
   try {
-    const decoded = jwt.verify(token, JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET, {
+      issuer: JWT_ISSUER,
+      audience: JWT_AUDIENCE,
+    });
     return { valid: true, decoded };
   } catch (err) {
     return reply.code(401).send({ valid: false, error: "Invalid or expired token" });
