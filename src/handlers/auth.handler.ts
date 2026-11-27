@@ -72,6 +72,11 @@ export async function loginHandler(request: FastifyRequest<{ Body: LoginBody }>,
     return reply.code(401).send({ error: "Invalid username or password" });
   }
 
+  if (!user.tenantId) {
+    user.tenantId = crypto.randomUUID();
+    await userRepository.save(user);
+  }
+
   let customClaims = {};
   try {
     if (user.claimsJson) {
@@ -85,6 +90,7 @@ export async function loginHandler(request: FastifyRequest<{ Body: LoginBody }>,
     sub: user.id,
     username: user.username,
     roles: user.roles,
+    tenantId: user.tenantId,
     ...customClaims,
   };
 
