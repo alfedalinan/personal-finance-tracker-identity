@@ -8,6 +8,9 @@ export class User {
   @Column({ unique: true })
   username!: string;
 
+  @Column({ type: "varchar", unique: true, nullable: true })
+  tenantId?: string;
+
   @Column()
   passwordHash!: string;
 

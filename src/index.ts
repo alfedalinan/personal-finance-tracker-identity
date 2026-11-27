@@ -1,8 +1,10 @@
 import "reflect-metadata";
 import Fastify from "fastify";
 import dotenv from "dotenv";
+import crypto from "crypto";
 import fastifyRateLimit from "@fastify/rate-limit";
 import { AppDataSource } from "./data-source";
+import { User } from "./entity/User";
 import { authRoutes } from "./routes/auth";
 
 dotenv.config();
@@ -35,6 +37,21 @@ const start = async () => {
     // Initialize Database connection
     await AppDataSource.initialize();
     fastify.log.info("Database connected successfully.");
+
+    // Backfill legacy users missing tenantId
+    const userRepository = AppDataSource.getRepository(User);
+    const users = await userRepository.find();
+    let backfilledCount = 0;
+    for (const u of users) {
+      if (!u.tenantId) {
+        u.tenantId = crypto.randomUUID();
+        await userRepository.save(u);
+        backfilledCount++;
+      }
+    }
+    if (backfilledCount > 0) {
+      fastify.log.info(`Backfilled tenantId for ${backfilledCount} legacy user(s).`);
+    }
 
     const port = process.env.PORT ? parseInt(process.env.PORT) : 3000;
     const host = process.env.HOST || "0.0.0.0";

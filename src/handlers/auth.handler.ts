@@ -1,6 +1,7 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { AppDataSource } from "../data-source";
 import { User } from "../entity/User";
 
@@ -39,12 +40,14 @@ export async function registerHandler(request: FastifyRequest<{ Body: RegisterBo
   user.passwordHash = passwordHash;
   user.roles = roles;
   user.claimsJson = JSON.stringify(claims);
+  user.tenantId = crypto.randomUUID();
 
   await userRepository.save(user);
 
   return reply.code(201).send({
     message: "User registered successfully",
     userId: user.id,
+    tenantId: user.tenantId,
     username: user.username,
     roles: user.roles,
     claims,
