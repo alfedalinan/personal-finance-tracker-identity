@@ -10,6 +10,16 @@ This service acts as the central authentication & authorization (identity) provi
 
 ---
 
+## Current State & Recent Progress
+
+Recent engineering iterations and architectural refinements include:
+- **`tenantId` Support**: Added `tenantId` field to the User entity and ensured it is correctly included in JWT claims upon login.
+- **Auto-Incrementing User ID Migration**: Migrated `user.id` from UUID to an auto-incrementing integer identifier for streamlined entity referencing.
+- **Enhanced JWT Security (`iss` & `aud`)**: Configured issuer (`iss`) and audience (`aud`) claims in JWT token issuance and verification.
+- **Environment Configuration Loading Fixes**: Resolved configuration loading order issues to ensure environment variables and configurations are fully loaded before application startup.
+
+---
+
 ## Architecture & Tech Stack
 
 - **Framework**: [Fastify](https://www.fastify.io/) for fast, low-overhead HTTP routing and request validation.
